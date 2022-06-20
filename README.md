@@ -11,7 +11,7 @@ Using model is YoloV4, which finds 8 classes:
           -aircraft
           -vessel
           -railway vehicle
-          -engineering vehicl
+          -engineering vehicle
 Model was trained on SkySat and WorldView domain with RGB order of channels. So better predictions will be on the same domains and order.
 </pre>
 Before starting of model using you need to install requirements:
