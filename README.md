@@ -33,7 +33,7 @@ Where yolo_path - path to weights of model,
       raster_path - path to raster,
       output_path - folder where to save output
       normalize - whether normalize raster ( if raster is not 8-bit - True)
-      bands_order - order in which to get channels ( R, G, B needed)
+      bands_order - order in which to get channels ( R, G, B order is necessary)
       step - window size of crop for model input (default setting = 512)
 </pre>
 
