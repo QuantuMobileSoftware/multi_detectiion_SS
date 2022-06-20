@@ -9,7 +9,8 @@ import rasterio
 from rasterio.plot import reshape_as_raster, reshape_as_image
 from rasterio.windows import Window
 from tqdm import tqdm
-
+from shapely.geometry import Polygon
+import geopandas as gpd
 
 warnings.filterwarnings("ignore")
 
@@ -20,14 +21,18 @@ THICKNESS = 1
 STD_NORMALIZE = 3.5
 
 
-def get_yolo_predict(model_path, raster_path, dst_raster_path, bands_order, step=512, std_norm=3.5, normalize=False):
+def get_yolo_predict(model_path, raster_path, output_path, bands_order, step=512, visualize=False, std_norm=3.5,
+                     normalize=False):
     print('Model uploading... \n')
     model = torch.hub.load(
         "ultralytics/yolov5:master", "custom", model_path, verbose=True)
     print('Model has been uploaded \n')
+
+    geo_save_path = os.path.join(output_path, 'detected_objects.geojson')
+    dst_raster_path = os.path.join(output_path, 'predict.tif')
+
     src = rasterio.open(raster_path)
     w, h = src.meta['width'], src.meta['height']
-    dst_raster_path = os.path.join(dst_raster_path, 'predict.tif')
     if w < step and h < step:
         step = np.min([w, h])
 
@@ -45,7 +50,7 @@ def get_yolo_predict(model_path, raster_path, dst_raster_path, bands_order, step
         if whole_rem_w[1] != 0:
             all_steps = all_steps + [(all_steps[-1][0] + step, h_step[1], whole_rem_w[1], h_step[-1])]
     if normalize:
-        print('Elements of normalization are being calculated...\n')
+        print('MAX of normalization is being calculated...\n')
         pixels_sum = np.sum([np.sum(src.read(bands_order, window=Window(*i)), axis=(1, 2)) for i in all_steps], axis=0)
 
         means_channels = (pixels_sum / (w * h)).reshape((3, 1, 1))
@@ -57,7 +62,8 @@ def get_yolo_predict(model_path, raster_path, dst_raster_path, bands_order, step
         std = (squared_deviation / (w * h)) ** 0.5
 
         max_ = (means_channels.reshape(3, -1) + std_norm * std.reshape(3, -1)).reshape(3, 1, 1)
-        print('Elements of normalization have been calculated\n')
+        print('MAX of normalization has been calculated\n')
+
     profile = src.profile
     profile['dtype'] = 'uint8'
     profile['count'] = 3
@@ -66,9 +72,10 @@ def get_yolo_predict(model_path, raster_path, dst_raster_path, bands_order, step
             dst_raster_path, 'w', **profile
     ) as dst:
         print('Start of predictions...\n')
+        detections = []
         for i in tqdm(all_steps):
-
-            window_normalize = src.read(bands_order, window=Window(*i))
+            x_start, y_start, x_step, y_step = i
+            window_normalize = src.read(bands_order, window=Window(x_start, y_start, x_step, y_step))
             if normalize:
                 mask_none = np.where(np.sum(window_normalize, axis=0) == 0, True, False)
                 window_normalize = np.clip((window_normalize / max_) * 255, 1, 255).astype(rasterio.uint8)
@@ -85,15 +92,24 @@ def get_yolo_predict(model_path, raster_path, dst_raster_path, bands_order, step
             for j, pred in ans.iterrows():
                 x, y, w, h, confidence, label = pred['x'], pred['y'], pred['w'], pred['h'], pred['confidence'], pred[
                     'name']
+                x, y = x + x_start, y + y_start
+                coords_box = [(x, y), (x, y + h), (x + w, y + h), (x + w, y)]
+                polygon = Polygon([src.transform * box_cs for box_cs in coords_box])
+                detections.append({'geometry': polygon, 'label': label})
+                if visualize:
+                    cv2.rectangle(image, (x, y), (x + w, y + h), (51, 255, 51), 2)
 
-                cv2.rectangle(image, (x, y), (x + w, y + h), (51, 255, 51), 2)
+                    cv2.putText(image, label, (x, y), FONT,
+                                FONT_SCALE, COLOR, THICKNESS, cv2.LINE_AA)
+            if visualize:
+                dst.write(reshape_as_raster(image), window=Window(*i))
 
-                cv2.putText(image, label, (x, y), FONT,
-                            FONT_SCALE, COLOR, THICKNESS, cv2.LINE_AA)
+        gpd.GeoDataFrame(detections, crs=src.meta['crs']).to_file(
+            geo_save_path, driver='GeoJSON')
+        print(f'Predictions are saved in :  {geo_save_path} \n')
 
-            dst.write(reshape_as_raster(image), window=Window(*i))
-
-        print(f'Predictions are ready! They in :  {dst_raster_path} \n')
+        if visualize:
+            print(f'Visualization of predictions  is ready! It is in :  {dst_raster_path} \n')
 
 
 if __name__ == '__main__':
@@ -110,8 +126,17 @@ if __name__ == '__main__':
     parser.add_argument(
         "--normalize", action='store_true', help="whether normalize raster"
     )
-    parser.add_argument('--bands_order', nargs='+', type=int, help='bands order in raster  for yolo predict and output')
-    parser.add_argument('--step', type=int, default=512, help='size of window for yolo')
+    parser.add_argument(
+        '--bands_order', nargs='+', type=int, help='bands order in raster  for yolo predict and output'
+    )
+    parser.add_argument(
+        '--step', type=int, default=512, help='size of window for yolo'
+    )
+    parser.add_argument(
+        '--visual', action='store_true', help="whether visual predictions"
+    )
     args = parser.parse_args()
-    get_yolo_predict(args.yolo_path, args.raster_path, args.output_path, tuple(args.bands_order),
-                     step=args.step, std_norm=STD_NORMALIZE, normalize=args.normalize)
+    get_yolo_predict(
+        args.yolo_path, args.raster_path, args.output_path, tuple(args.bands_order),
+        step=args.step, visualize=args.visual, std_norm=STD_NORMALIZE, normalize=args.normalize
+    )
