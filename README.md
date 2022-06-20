@@ -37,7 +37,7 @@ Where yolo_path - path to weights of model,
       step - window size of crop for model input (default setting = 512)
 </pre>
 
-To run inference notebook need to pass PATH_PREPROCESSED_TILE(path to tile) and MODEL_PATH(path to raster) 
+To run inference notebook need to pass PATH_PREPROCESSED_TILE(path to tile) and MODEL_PATH(path to raster). And adjust other parameters if necessary.
 
 link to weights of model - https://drive.google.com/file/d/1GPYNoth1Dh3XcZ0dM52JDB9OKEMoivTQ/view?usp=sharing
 
