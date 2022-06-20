@@ -1,8 +1,9 @@
 # multi_detectiion_SS
-Repo consists of inference script and inference notebook, which get satellite image and find coordinates of <br />
-boxes of objects and their labels in image, and next give geojson with coordinates and labels. Also if set <br />
-the certain parameter("visualize"), can get the visualization of the predictions. <br />
-Using model is YoloV4, which finds 8 classes:<br />
+<pre>
+Repo consists of inference script and inference notebook, which get satellite image and find coordinates of 
+boxes of objects and their labels in image, and next give geojson with coordinates and labels. Also if set
+the certain parameter("visualize"), can get the visualization of the predictions.
+Using model is YoloV4, which finds 8 classes:
           -car
           -truck
           -building
@@ -10,7 +11,7 @@ Using model is YoloV4, which finds 8 classes:<br />
           -aircraft
           -vessel
           -railway vehicle
-          -engineering vehicle
+          -engineering vehicl
 Model was trained on SkySat and WorldView domain with RGB order of channels. So better predictions will be on the same domains and order.
 
 Before starting of model using you need to install requirements:
@@ -34,7 +35,7 @@ Where yolo_path - path to weights of model,
       bands_order - order in which to get channels ( R, G, B needed)
       step - window size of crop for model input (default setting = 512)
     
-To run inference notebook need to pass PATH_PREPROCESSED_TILE(path to raster) and MODEL_PATH(path to wegihts)
+To run inference notebook need to pass the following command:
 
       
       
