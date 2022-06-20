@@ -36,9 +36,9 @@ Where yolo_path - path to weights of model,
       bands_order - order in which to get channels ( R, G, B needed)
       step - window size of crop for model input (default setting = 512)
 </pre>
-<pre>
+
 To run inference notebook need to pass PATH_PREPROCESSED_TILE(path to tile) and MODEL_PATH(path to raster) 
-</pre>
+
 link to weights of model - https://drive.google.com/file/d/1GPYNoth1Dh3XcZ0dM52JDB9OKEMoivTQ/view?usp=sharing
 
       
