@@ -13,7 +13,7 @@ Using model is YoloV4, which finds 8 classes:
           -railway vehicle
           -engineering vehicl
 Model was trained on SkySat and WorldView domain with RGB order of channels. So better predictions will be on the same domains and order.
-
+</pre>
 Before starting of model using you need to install requirements:
 ```
 pip install -r requirements.txt
@@ -28,6 +28,7 @@ python yolo_inference.py --yolo_path
                          --bands_order
                          --step
 ```
+<pre>
 Where yolo_path - path to weights of model, 
       raster_path - path to raster,
       output_path - folder where to save output
