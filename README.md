@@ -11,7 +11,7 @@ Using model is YoloV4, which finds 8 classes:
           -aircraft
           -vessel
           -railway vehicle
-          -engineering vehicl
+          -engineering vehicle
 Model was trained on SkySat and WorldView domain with RGB order of channels. So better predictions will be on the same domains and order.
 </pre>
 Before starting of model using you need to install requirements:
@@ -33,11 +33,11 @@ Where yolo_path - path to weights of model,
       raster_path - path to raster,
       output_path - folder where to save output
       normalize - whether normalize raster ( if raster is not 8-bit - True)
-      bands_order - order in which to get channels ( R, G, B needed)
+      bands_order - order in which to get channels ( R, G, B order is necessary)
       step - window size of crop for model input (default setting = 512)
 </pre>
 
-To run inference notebook need to pass PATH_PREPROCESSED_TILE(path to tile) and MODEL_PATH(path to raster) 
+To run inference notebook(yolo_predict_notebook.ipynb) need to pass PATH_PREPROCESSED_TILE(path to tile) and MODEL_PATH(path to weights). And adjust other parameters if necessary.
 
 link to weights of model - https://drive.google.com/file/d/1GPYNoth1Dh3XcZ0dM52JDB9OKEMoivTQ/view?usp=sharing
 
