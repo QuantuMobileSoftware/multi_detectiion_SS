@@ -1,45 +1,45 @@
-# multi_detectiion_SS
-<pre>
-Repo consists of inference script and inference notebook, which get satellite image and find coordinates of 
-boxes of objects and their labels in image, and next give geojson with coordinates and labels. Also if set
-the certain parameter("visualize"), can get the visualization of the predictions.
-Using model is YoloV4, which finds 8 classes:
-          -car
-          -truck
-          -building
-          -boat
-          -aircraft
-          -vessel
-          -railway vehicle
-          -engineering vehicle
-Model was trained on SkySat and WorldView domain with RGB order of channels. So better predictions will be on the same domains and order.
-</pre>
-Before starting of model using you need to install requirements:
-```
-pip install -r requirements.txt
-```
-To run inference script need to write the following command:
+# SIP BASIC OBJECT DETECTION
+
+## Download weights
+To operate properly component requires weights. Before building image download it from link
+`https://drive.google.com/file/d/1icxJEh4Ocs2cO64TKP3DVKheFPtOVmCm/view?usp=sharing`
+and place it in folder next to Dockerfile. 
+Downloaded file must have the following filename: `best.pt`
+
+## Build image
+`docker build -t registry.quantumobile.co/sip_basic_objects_detection .`
+
+## Pull image
+`docker pull registry.quantumobile.co/sip_basic_objects_detection`
+
+## Push to registry
+`docker push registry.quantumobile.co/sip_basic_objects_detection`
+
+## Docker run command
 
 ```
-python yolo_inference.py --yolo_path
-                         --raster_path
-                         --output_path
-                         --normalize
-                         --bands_order
-                         --step
+docker run \
+    -e "PLANET_ORDER_ID=#############################" \
+    -e "OUTPUT_FOLDER=/output" \
+    -e "PLANET_API_KEY=###############################" \
+    -v `pwd`/data/results:/output \
+    registry.quantumobile.co/sip_basic_objects_detections
 ```
-<pre>
-Where yolo_path - path to weights of model, 
-      raster_path - path to raster,
-      output_path - folder where to save output
-      normalize - whether normalize raster ( if raster is not 8-bit - True)
-      bands_order - order in which to get channels ( R, G, B order is necessary)
-      step - window size of crop for model input (default setting = 512)
-</pre>
 
-To run inference notebook(yolo_predict_notebook.ipynb) need to pass PATH_PREPROCESSED_TILE(path to tile) and MODEL_PATH(path to weights). And adjust other parameters if necessary.
+## How to add model to SIP
+____
 
-link to weights of model - https://drive.google.com/file/d/1GPYNoth1Dh3XcZ0dM52JDB9OKEMoivTQ/view?usp=sharing
-
-      
-      
+1. Open Admin page, `localhost:9000/admin/`
+2. In AOI block select `Components` and click on `+Add`
+    * Add <b>Component name</b>: `Add your name`
+    * Add <b>Image</b>: `registry.quantumobile.co/sip_basic_objects_detection`
+    * Add <b>Additional parameter</b> `PLANET_ORDER_ID`
+    * Select <b>Planet API key is required</b>
+    * <b>GPU is needed for a component to run</b> could be selected (optional)
+3. <b>SAVE</b>
+4. Update page with `SIP app` <i>(localhost:3000)</i>
+5. Select `Area` or `Field` on the map and save it
+6. Drop-down menu on your `Area` or `Field` -> `View reports`
+7. `Create new`
+8. In `Select layers` choose your component, add additional params like <i>Year</i>, <i>Date range</i> and so on
+9. `Save changes`    
