@@ -1,5 +1,7 @@
 import argparse
 import os
+from pathlib import Path
+from typing import Union
 import warnings
 
 import cv2
@@ -12,6 +14,8 @@ from tqdm import tqdm
 from shapely.geometry import Polygon
 import geopandas as gpd
 
+from satellite_utils.downloader import PlanetOrderDownloader as PoD
+
 warnings.filterwarnings("ignore")
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
@@ -20,9 +24,18 @@ COLOR = (255, 0, 0)
 THICKNESS = 1
 STD_NORMALIZE = 3.5
 
+OUTPUT_FOLDER=os.getenv('OUTPUT_FOLDER')
+PLANET_ORDER_ID = os.getenv("PLANET_ORDER_ID")
+PLANET_API_KEY = os.getenv('PLANET_API_KEY')
+
+PATH_TO_WEIGHTS = os.path.join(os.getcwd(), "best.pt")
+PATH_TO_SATELLITE_IMAGES = "/images"
+
+os.makedirs(PATH_TO_SATELLITE_IMAGES, exist_ok=True)
 
 def get_yolo_predict(model_path, raster_path, output_path, bands_order, step=512, visualize=False, std_norm=3.5,
                      normalize=False):
+
     print('Model uploading... \n')
     model = torch.hub.load(
         "ultralytics/yolov5:master", "custom", model_path, verbose=True)
@@ -111,32 +124,24 @@ def get_yolo_predict(model_path, raster_path, output_path, bands_order, step=512
         if visualize:
             print(f'Visualization of predictions  is ready! It is in :  {dst_raster_path} \n')
 
+def download_satellite_imagery(destination_folder: Union[str, Path], order_id:str):
+
+    downloader = PoD(PLANET_API_KEY, destination_folder)
+    downloader.set_order_id(order_id)
+    downloader.poll_for_success()
+    order_name, order_archive_name = downloader.get_order_info()
+    downloader.download_order_archive()
+    return downloader.run()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--yolo_path", type=str, help="Path to yolo model"
-    )
-    parser.add_argument(
-        "--raster_path", type=str, help="Path to raster"
-    )
-    parser.add_argument(
-        "--output_path", type=str, help="Path to folder where put output"
-    )
-    parser.add_argument(
-        "--normalize", action='store_true', help="whether normalize raster"
-    )
-    parser.add_argument(
-        '--bands_order', nargs='+', type=int, help='bands order in raster  for yolo predict and output'
-    )
-    parser.add_argument(
-        '--step', type=int, default=512, help='size of window for yolo'
-    )
-    parser.add_argument(
-        '--visual', action='store_true', help="whether visual predictions"
-    )
-    args = parser.parse_args()
+
+    raster_path, band_order = download_satellite_imagery(PATH_TO_SATELLITE_IMAGES, PLANET_ORDER_ID)
+
     get_yolo_predict(
-        args.yolo_path, args.raster_path, args.output_path, tuple(args.bands_order),
-        step=args.step, visualize=args.visual, std_norm=STD_NORMALIZE, normalize=args.normalize
+        model_path=PATH_TO_WEIGHTS, 
+        raster_path=raster_path,
+        output_path=OUTPUT_FOLDER,
+        bands_order=band_order,
+        std_norm=STD_NORMALIZE,
+        visualize=True
     )
