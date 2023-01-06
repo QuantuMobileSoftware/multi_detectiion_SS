@@ -23,7 +23,7 @@ docker run \
     -e "OUTPUT_FOLDER=/output" \
     -e "PLANET_API_KEY=###############################" \
     -v `pwd`/data/results:/output \
-    registry.quantumobile.co/sip_basic_objects_detections
+    registry.quantumobile.co/sip_basic_objects_detection
 ```
 
 ## How to add model to SIP
