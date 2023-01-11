@@ -7,13 +7,13 @@ and place it in folder next to Dockerfile.
 Downloaded file must have the following filename: `best.pt`
 
 ## Build image
-`docker build -t registry.quantumobile.co/sip_basic_objects_detection .`
+`docker build -t quantumobile/sip_basic_objects_detection .`
 
 ## Pull image
-`docker pull registry.quantumobile.co/sip_basic_objects_detection`
+`docker pull quantumobile/sip_basic_objects_detection`
 
 ## Push to registry
-`docker push registry.quantumobile.co/sip_basic_objects_detection`
+`docker push quantumobile/sip_basic_objects_detection`
 
 ## Docker run command
 
@@ -23,7 +23,7 @@ docker run \
     -e "OUTPUT_FOLDER=/output" \
     -e "PLANET_API_KEY=###############################" \
     -v `pwd`/data/results:/output \
-    registry.quantumobile.co/sip_basic_objects_detection
+    quantumobile/sip_basic_objects_detection
 ```
 
 ## How to add model to SIP
@@ -32,7 +32,7 @@ ____
 1. Open Admin page, `localhost:9000/admin/`
 2. In AOI block select `Components` and click on `+Add`
     * Add <b>Component name</b>: `Add your name`
-    * Add <b>Image</b>: `registry.quantumobile.co/sip_basic_objects_detection`
+    * Add <b>Image</b>: `quantumobile/sip_basic_objects_detection`
     * Add <b>Additional parameter</b> `PLANET_ORDER_ID`
     * Select <b>Planet API key is required</b>
     * <b>GPU is needed for a component to run</b> could be selected (optional)
